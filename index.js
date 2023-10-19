@@ -4,8 +4,6 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors');
 
-
-
 const uri = "mongodb+srv://techzone:vC7vSjUS5m9e3xW3@rahim.iilssri.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,7 +29,7 @@ async function run() {
             res.send(products)
         })
   
-        app.get('/productsUp/:id', async(req, res) => {
+        app.get('/detailsProducts/:id', async(req, res) => {
             const id = req.params.id;
             const query = {_id : new ObjectId(id)}
             const result = await productCollection.findOne(query)
@@ -44,7 +42,7 @@ async function run() {
             res.send(result)
         })
 
-        app.put('/updatedProduct/:id', async(req, res) => {
+        app.put('/updateProduct/:id', async(req, res) => {
             const id = req.params.id;
             const filter = {_id : new ObjectId(id)}
             const options = { upsert: true };
@@ -95,6 +93,13 @@ async function run() {
         app.post('/addtocart', async(req, res) => {
             const product = req.body;
             const result = await addToCartCollection.insertOne(product)
+            res.send(result)
+        })
+
+        app.delete('/addtocart/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)}
+            const result = await addToCartCollection.deleteOne(query)
             res.send(result)
         })
 
