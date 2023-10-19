@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors');
@@ -24,17 +24,44 @@ async function run() {
 
         const productCollection = client.db('productsDB').collection('products')
         const brandCollection = client.db('productsDB').collection('brand')
+        const addToCartCollection = client.db('productsDB').collection('addToCart')
 
         app.get('/products', async (req, res) => {
             const products = await productCollection.find().toArray();
             res.send(products)
         })
+  
+        app.get('/productsUp/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)}
+            const result = await productCollection.findOne(query)
+            res.send(result)
+        })
 
-              
-        
         app.post('/products', async (req, res) => {
             const newProduct = req.body;
             const result = await productCollection.insertOne(newProduct)
+            res.send(result)
+        })
+
+        app.put('/updatedProduct/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id : new ObjectId(id)}
+            const options = { upsert: true };
+            const updateProduct = req.body;
+
+            const product = {
+                $set: {
+                    name: updateProduct.name,
+                    brand: updateProduct.brand,
+                    product: updateProduct.product,
+                    image: updateProduct.image,
+                    price: updateProduct.price,
+                    ratting: updateProduct.ratting,
+                    description: updateProduct.description,
+                    }
+            }
+            const result = await productCollection.updateOne(filter, product, options)
             res.send(result)
         })
         
@@ -56,6 +83,19 @@ async function run() {
             const brand = req.params.brand;
             const products = await productCollection.find({brand}).toArray()
             res.send(products)
+        })
+
+        // ADD TO CART
+
+        app.get('/addtocart', async(req, res) => {
+            const product  = await addToCartCollection.find().toArray()
+            res.send(product)
+        })
+
+        app.post('/addtocart', async(req, res) => {
+            const product = req.body;
+            const result = await addToCartCollection.insertOne(product)
+            res.send(result)
         })
 
 
